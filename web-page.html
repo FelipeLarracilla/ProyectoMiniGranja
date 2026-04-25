@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>MiniGranja Dashboard</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f8;
+            text-align: center;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .grafica {
+            width: 95%;
+            height: 450px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🌡️ MiniGranja - Monitoreo</h1>
+
+<h2>Cunas</h2>
+<div class="grafica">
+    <canvas id="cunas"></canvas>
+</div>
+
+<h2>Temperatura Ambiente</h2>
+<div class="grafica">
+    <canvas id="tempAmb"></canvas>
+</div>
+
+<h2>Humedad Ambiente</h2>
+<div class="grafica">
+    <canvas id="humAmb"></canvas>
+</div>
+
+<script>
+// const API_URL = "https://mu5cj8jjzb.execute-api.us-east-1.amazonaws.com/temperaturas";
+const API_URL = "https://mu5cj8jjzb.execute-api.us-east-1.amazonaws.com/temperaturas?range=month";
+
+
+let chartCunas, chartTemp, chartHum;
+
+async function cargarDatos() {
+    try {
+        const res = await fetch(API_URL);
+        const raw = await res.json();
+        const data = Array.isArray(raw) ? raw : JSON.parse(raw.body);
+
+        const labels = data.map(d =>
+            new Date(d.payload?.timestamp * 1000).toLocaleTimeString()
+        );
+
+        // 🔹 Cunas
+        const c1 = data.map(d => d.payload?.cunas?.cuna1 ?? 0);
+        const c2 = data.map(d => d.payload?.cunas?.cuna2 ?? 0);
+        const c3 = data.map(d => d.payload?.cunas?.cuna3 ?? 0);
+
+        // 🔹 Promedios
+        const tempProm = data.map(d => {
+            const t1 = d.payload?.ambiente?.temp1 ?? 0;
+            const t2 = d.payload?.ambiente?.temp2 ?? 0;
+            return (t1 + t2) / 2;
+        });
+
+        const humProm = data.map(d => {
+            const h1 = d.payload?.ambiente?.hum1 ?? 0;
+            const h2 = d.payload?.ambiente?.hum2 ?? 0;
+            return (h1 + h2) / 2;
+        });
+
+        // 🔥 limpiar gráficas
+        if (chartCunas) chartCunas.destroy();
+        if (chartTemp) chartTemp.destroy();
+        if (chartHum) chartHum.destroy();
+
+        // 🔥 CUNAS
+        chartCunas = new Chart(document.getElementById("cunas"), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: "Cuna 1", data: c1, borderColor: "red" },
+                    { label: "Cuna 2", data: c2, borderColor: "blue" },
+                    { label: "Cuna 3", data: c3, borderColor: "green" }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 🔥 TEMPERATURA AMBIENTE
+        chartTemp = new Chart(document.getElementById("tempAmb"), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: "Temp Promedio (°C)", data: tempProm, borderColor: "orange" }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // 🔥 HUMEDAD AMBIENTE
+        chartHum = new Chart(document.getElementById("humAmb"), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: "Humedad Promedio (%)", data: humProm, borderColor: "purple" }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+cargarDatos();
+setInterval(cargarDatos, 10000);
+</script>
+
+</body>
+</html>
