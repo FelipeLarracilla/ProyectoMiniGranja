@@ -1,141 +1,290 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>MiniGranja Dashboard</title>
+<meta charset="UTF-8">
+<title>MiniGranja IoT</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+    --bg: #102a12;
+    --card: #1e3a1f;
+    --card-soft: #244d29;
+    --primary: #66bb6a;
+    --secondary: #8d6e63;
+    --accent: #ffd54f;
+    --text: #f1f8e9;
+}
 
-    <style>
-        body {
-            font-family: Arial;
-            background: #f4f6f8;
-            text-align: center;
-            max-width: 1200px;
-            margin: auto;
-        }
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
 
-        .grafica {
-            width: 95%;
-            height: 450px;
-            margin: 30px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-        }
+header {
+    background: #1b3a1b;
+    padding: 20px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    border-bottom: 2px solid var(--primary);
+}
 
-        canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-    </style>
+.container {
+    padding: 20px;
+}
+
+select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--primary);
+    margin-bottom: 20px;
+    font-size: 16px;
+    background: var(--card-soft);
+    color: white;
+}
+
+/* CARDS */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: linear-gradient(135deg, #1e3a1f, #244d29);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border-left: 6px solid var(--primary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.card h3 {
+    color: #c8e6c9;
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 28px;
+    color: var(--accent);
+}
+
+/* CHARTS */
+.chart-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: auto;
+    background: var(--card);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+canvas {
+    width: 100% !important;
+    height: 400px !important;
+}
+
+@media (max-width: 600px) {
+    canvas {
+        height: 250px !important;
+    }
+}
+
+.status {
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+</style>
 </head>
 
 <body>
 
-<h1>🌡️ MiniGranja - Monitoreo</h1>
+<header>🌾 MiniGranja IoT</header>
 
-<h2>Cunas</h2>
-<div class="grafica">
-    <canvas id="cunas"></canvas>
+<div class="container">
+
+<select id="range" onchange="cargarDatos()">
+    <option value="30m">30 min</option>
+    <option value="1h">1 hora</option>
+    <option value="3h">3 horas</option>
+    <option value="6h">6 horas</option>
+    <option value="12h">12 horas</option>
+    <option value="24h" selected>24 horas</option>
+    <option value="3d">3 días</option>
+    <option value="week">Semana</option>
+    <option value="month">Mes</option>
+    <option value="year">Año</option>
+</select>
+
+<div id="status" class="status">Cargando...</div>
+
+<div class="cards">
+    <div class="card"><h3>🌡️ Temp Ambiente</h3><h2 id="temp">--</h2></div>
+    <div class="card"><h3>💧 Humedad</h3><h2 id="hum">--</h2></div>
+    <div class="card"><h3>🐷 Cuna 1</h3><h2 id="c1">--</h2></div>
+    <div class="card"><h3>🐷 Cuna 2</h3><h2 id="c2">--</h2></div>
+    <div class="card"><h3>🐷 Cuna 3</h3><h2 id="c3">--</h2></div>
 </div>
 
-<h2>Temperatura Ambiente</h2>
-<div class="grafica">
-    <canvas id="tempAmb"></canvas>
-</div>
+<div class="chart-container"><canvas id="cunasChart"></canvas></div>
+<div class="chart-container"><canvas id="tempChart"></canvas></div>
+<div class="chart-container"><canvas id="humChart"></canvas></div>
+<div class="chart-container"><canvas id="controlChart"></canvas></div>
 
-<h2>Humedad Ambiente</h2>
-<div class="grafica">
-    <canvas id="humAmb"></canvas>
 </div>
 
 <script>
-// const API_URL = "https://mu5cj8jjzb.execute-api.us-east-1.amazonaws.com/temperaturas";
-const API_URL = "https://mu5cj8jjzb.execute-api.us-east-1.amazonaws.com/temperaturas?range=all";
 
+// Fondo blanco para gráficas
+const whiteBackgroundPlugin = {
+    id: 'whiteBackground',
+    beforeDraw: (chart) => {
+        const {ctx, chartArea} = chart;
+        ctx.save();
+        ctx.fillStyle = 'white';
+        ctx.fillRect(chartArea.left, chartArea.top,
+                     chartArea.right - chartArea.left,
+                     chartArea.bottom - chartArea.top);
+        ctx.restore();
+    }
+};
 
-let chartCunas, chartTemp, chartHum;
+const API = "https://mu5cj8jjzb.execute-api.us-east-1.amazonaws.com/temperaturas";
+
+let charts = {};
 
 async function cargarDatos() {
-    try {
-        const res = await fetch(API_URL);
-        const raw = await res.json();
-        const data = Array.isArray(raw) ? raw : JSON.parse(raw.body);
+    const range = document.getElementById("range").value;
+    document.getElementById("status").innerText = "Cargando...";
 
-        const labels = data.map(d =>
-            new Date(d.payload?.timestamp * 1000).toLocaleTimeString()
-        );
+    const res = await fetch(`${API}?range=${range}`);
+    let data = await res.json();
 
-        // 🔹 Cunas
-        const c1 = data.map(d => d.payload?.cunas?.cuna1 ?? 0);
-        const c2 = data.map(d => d.payload?.cunas?.cuna2 ?? 0);
-        const c3 = data.map(d => d.payload?.cunas?.cuna3 ?? 0);
-
-        // 🔹 Promedios
-        const tempProm = data.map(d => {
-            const t1 = d.payload?.ambiente?.temp1 ?? 0;
-            const t2 = d.payload?.ambiente?.temp2 ?? 0;
-            return (t1 + t2) / 2;
-        });
-
-        const humProm = data.map(d => {
-            const h1 = d.payload?.ambiente?.hum1 ?? 0;
-            const h2 = d.payload?.ambiente?.hum2 ?? 0;
-            return (h1 + h2) / 2;
-        });
-
-        // 🔥 limpiar gráficas
-        if (chartCunas) chartCunas.destroy();
-        if (chartTemp) chartTemp.destroy();
-        if (chartHum) chartHum.destroy();
-
-        // 🔥 CUNAS
-        chartCunas = new Chart(document.getElementById("cunas"), {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [
-                    { label: "Cuna 1", data: c1, borderColor: "red" },
-                    { label: "Cuna 2", data: c2, borderColor: "blue" },
-                    { label: "Cuna 3", data: c3, borderColor: "green" }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        // 🔥 TEMPERATURA AMBIENTE
-        chartTemp = new Chart(document.getElementById("tempAmb"), {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [
-                    { label: "Temp Promedio (°C)", data: tempProm, borderColor: "orange" }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-        // 🔥 HUMEDAD AMBIENTE
-        chartHum = new Chart(document.getElementById("humAmb"), {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [
-                    { label: "Humedad Promedio (%)", data: humProm, borderColor: "purple" }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-
-    } catch (e) {
-        console.error(e);
+    if (!data || data.length === 0) {
+        const res2 = await fetch(`${API}?range=all`);
+        data = await res2.json();
+        if (!data.length) return;
     }
+
+    renderData(data);
+}
+
+function renderData(data) {
+
+    document.getElementById("status").innerText = `${data.length} registros`;
+
+    const labels = data.map(d => {
+        const date = new Date(d.timestamp * 1000);
+        return date.toLocaleString('es-MX', {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    });
+
+    const c1 = data.map(d => d.payload?.cunas?.cuna1 ?? 0);
+    const c2 = data.map(d => d.payload?.cunas?.cuna2 ?? 0);
+    const c3 = data.map(d => d.payload?.cunas?.cuna3 ?? 0);
+
+    const temp = data.map(d => d.payload?.ambiente?.temp ?? 0);
+    const hum = data.map(d => d.payload?.ambiente?.hum ?? 0);
+
+    const foco1 = data.map(d => d.payload?.control?.cuna1?.foco ?? 0);
+    const foco2 = data.map(d => d.payload?.control?.cuna2?.foco ?? 0);
+    const foco3 = data.map(d => d.payload?.control?.cuna3?.foco ?? 0);
+
+    const last = data[data.length - 1].payload;
+
+    document.getElementById("temp").innerText = last.ambiente.temp + " °C";
+    document.getElementById("hum").innerText = last.ambiente.hum + " %";
+    document.getElementById("c1").innerText = last.cunas.cuna1 + " °C";
+    document.getElementById("c2").innerText = last.cunas.cuna2 + " °C";
+    document.getElementById("c3").innerText = last.cunas.cuna3 + " °C";
+
+    for (let key in charts) {
+        if (charts[key]) charts[key].destroy();
+    }
+
+    const options = (title, yLabel) => ({
+        plugins: {
+            title: { display: true, text: title, color: '#000' },
+            legend: { labels: { color: '#000' } }
+        },
+        scales: {
+            y: {
+                title: { display: true, text: yLabel, color: '#000' },
+                ticks: { color: '#000' },
+                grid: { color: 'rgba(0,0,0,0.1)' }
+            },
+            x: {
+                ticks: { color: '#000' },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            }
+        }
+    });
+
+    charts.cunas = new Chart(cunasChart, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Cuna 1', data: c1, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.2)', tension: 0.4 },
+                { label: 'Cuna 2', data: c2, borderColor: '#6d4c41', backgroundColor: 'rgba(109,76,65,0.2)', tension: 0.4 },
+                { label: 'Cuna 3', data: c3, borderColor: '#f9a825', backgroundColor: 'rgba(249,168,37,0.2)', tension: 0.4 }
+            ]
+        },
+        options: options('🌡️ Temperatura por Cuna', 'Temperatura (°C)'),
+        plugins: [whiteBackgroundPlugin]
+    });
+
+    charts.temp = new Chart(tempChart, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Temp Ambiente', data: temp, borderColor: '#2e7d32', tension: 0.4 }
+            ]
+        },
+        options: options('🌡️ Temperatura Ambiente', 'Temperatura (°C)'),
+        plugins: [whiteBackgroundPlugin]
+    });
+
+    charts.hum = new Chart(humChart, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Humedad', data: hum, borderColor: '#f9a825', tension: 0.4 }
+            ]
+        },
+        options: options('💧 Humedad', 'Humedad (%)'),
+        plugins: [whiteBackgroundPlugin]
+    });
+
+    charts.control = new Chart(controlChart, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                { label: 'Foco C1', data: foco1, borderColor: '#2e7d32', tension: 0.4 },
+                { label: 'Foco C2', data: foco2, borderColor: '#6d4c41', tension: 0.4 },
+                { label: 'Foco C3', data: foco3, borderColor: '#f9a825', tension: 0.4 }
+            ]
+        },
+        options: options('💡 Potencia de Focos', 'Potencia (%)'),
+        plugins: [whiteBackgroundPlugin]
+    });
 }
 
 cargarDatos();
-setInterval(cargarDatos, 10000);
+setInterval(cargarDatos, 60000);
+
 </script>
 
 </body>
