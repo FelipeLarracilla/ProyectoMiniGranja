@@ -2,111 +2,277 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>MiniGranja IoT</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-:root {
-    --bg: #102a12;
-    --card: #1e3a1f;
-    --card-soft: #244d29;
-    --primary: #66bb6a;
-    --secondary: #8d6e63;
-    --accent: #ffd54f;
-    --text: #f1f8e9;
+
+:root{
+    --bg:#f4f7f1;
+    --card:#ffffff;
+    --primary:#4caf50;
+    --primary-dark:#2e7d32;
+    --earth:#8d6e63;
+    --accent:#ffb300;
+    --text:#263238;
+    --soft:#eef3ea;
+    --danger:#e53935;
+    --shadow:0 8px 20px rgba(0,0,0,0.08);
 }
 
-body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
+*{
+    box-sizing:border-box;
 }
 
-header {
-    background: #1b3a1b;
-    padding: 20px;
-    text-align: center;
-    font-size: 24px;
-    font-weight: bold;
-    border-bottom: 2px solid var(--primary);
+body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    background:var(--bg);
+    color:var(--text);
 }
 
-.container {
-    padding: 20px;
+/* HEADER */
+
+header{
+    background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+    color:white;
+    padding:25px;
+    box-shadow:var(--shadow);
 }
 
-select {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid var(--primary);
-    margin-bottom: 20px;
-    font-size: 16px;
-    background: var(--card-soft);
-    color: white;
+.header-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+}
+
+.header-title h1{
+    margin:0;
+    font-size:32px;
+}
+
+.header-title p{
+    margin:5px 0 0;
+    opacity:0.9;
+}
+
+.status-badge{
+    background:rgba(255,255,255,0.2);
+    padding:10px 15px;
+    border-radius:30px;
+    font-size:14px;
+    backdrop-filter:blur(8px);
+}
+
+/* MAIN */
+
+.container{
+    max-width:1500px;
+    margin:auto;
+    padding:20px;
+}
+
+/* TOP BAR */
+
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+select{
+    padding:12px 15px;
+    border:none;
+    border-radius:12px;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    font-size:15px;
+    color:var(--text);
 }
 
 /* CARDS */
-.cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:18px;
+    margin-bottom:25px;
 }
 
-.card {
-    background: linear-gradient(135deg, #1e3a1f, #244d29);
-    padding: 20px;
-    border-radius: 12px;
-    text-align: center;
-    border-left: 6px solid var(--primary);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+.card{
+    background:var(--card);
+    border-radius:18px;
+    padding:20px;
+    box-shadow:var(--shadow);
+    transition:0.3s;
+    position:relative;
+    overflow:hidden;
 }
 
-.card h3 {
-    color: #c8e6c9;
+.card:hover{
+    transform:translateY(-3px);
 }
 
-.card h2 {
-    margin: 0;
-    font-size: 28px;
-    color: var(--accent);
+.card::before{
+    content:"";
+    position:absolute;
+    top:0;
+    left:0;
+    width:6px;
+    height:100%;
+}
+
+.card.temp::before{background:var(--primary);}
+.card.hum::before{background:#29b6f6;}
+.card.c1::before{background:#66bb6a;}
+.card.c2::before{background:var(--earth);}
+.card.c3::before{background:var(--accent);}
+
+.card h3{
+    margin:0;
+    font-size:16px;
+    color:#607d8b;
+}
+
+.card h2{
+    margin:15px 0 5px;
+    font-size:34px;
+}
+
+/* CONFIG */
+
+.config{
+    background:var(--card);
+    padding:20px;
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    margin-bottom:25px;
+}
+
+.config h2{
+    margin-top:0;
+}
+
+.config-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+    margin-top:15px;
+}
+
+.config-item{
+    display:flex;
+    flex-direction:column;
+}
+
+.config-item label{
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+.config-item input{
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #ddd;
+    font-size:15px;
+}
+
+button{
+    margin-top:20px;
+    background:var(--primary);
+    color:white;
+    border:none;
+    padding:14px 22px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:bold;
+    transition:0.3s;
+}
+
+button:hover{
+    background:var(--primary-dark);
 }
 
 /* CHARTS */
-.chart-container {
-    width: 100%;
-    max-width: 1200px;
-    margin: auto;
-    background: var(--card);
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
+
+.chart-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(500px,1fr));
+    gap:20px;
 }
 
-canvas {
-    width: 100% !important;
-    height: 400px !important;
+.chart-container{
+    background:var(--card);
+    padding:20px;
+    border-radius:18px;
+    box-shadow:var(--shadow);
 }
 
-@media (max-width: 600px) {
-    canvas {
-        height: 250px !important;
+canvas{
+    width:100% !important;
+    height:350px !important;
+}
+
+.footer-status{
+    margin-top:20px;
+    text-align:center;
+    color:#607d8b;
+}
+
+/* MOBILE */
+
+@media(max-width:700px){
+
+    .chart-grid{
+        grid-template-columns:1fr;
     }
+
+    canvas{
+        height:280px !important;
+    }
+
+    .header-title h1{
+        font-size:24px;
+    }
+
 }
 
-.status {
-    margin-bottom: 10px;
-    font-size: 14px;
-}
 </style>
 </head>
 
 <body>
 
-<header>🌾 MiniGranja IoT</header>
+<header>
+
+<div class="header-top">
+
+<div class="header-title">
+    <h1>🌾 MiniGranja IoT</h1>
+    <p>Monitoreo inteligente de maternidad porcina</p>
+</div>
+
+<div class="status-badge" id="connectionStatus">
+    🟢 Sistema conectado
+</div>
+
+</div>
+
+</header>
 
 <div class="container">
+
+<!-- TOP BAR -->
+
+<div class="top-bar">
 
 <select id="range" onchange="cargarDatos()">
     <option value="30m">30 min</option>
@@ -121,169 +287,458 @@ canvas {
     <option value="year">Año</option>
 </select>
 
-<div id="status" class="status">Cargando...</div>
-
-<div class="cards">
-    <div class="card"><h3>🌡️ Temp Ambiente</h3><h2 id="temp">--</h2></div>
-    <div class="card"><h3>💧 Humedad</h3><h2 id="hum">--</h2></div>
-    <div class="card"><h3>🐷 Cuna 1</h3><h2 id="c1">--</h2></div>
-    <div class="card"><h3>🐷 Cuna 2</h3><h2 id="c2">--</h2></div>
-    <div class="card"><h3>🐷 Cuna 3</h3><h2 id="c3">--</h2></div>
+<div id="status">
+    Cargando...
 </div>
 
-<div class="chart-container"><canvas id="cunasChart"></canvas></div>
-<div class="chart-container"><canvas id="tempChart"></canvas></div>
-<div class="chart-container"><canvas id="humChart"></canvas></div>
-<div class="chart-container"><canvas id="controlChart"></canvas></div>
+</div>
+
+<!-- CARDS -->
+
+<div class="cards">
+
+<div class="card temp">
+    <h3>🌡️ Temp Ambiente</h3>
+    <h2 id="temp">--</h2>
+</div>
+
+<div class="card hum">
+    <h3>💧 Humedad</h3>
+    <h2 id="hum">--</h2>
+</div>
+
+<div class="card c1">
+    <h3>🐷 Cuna 1</h3>
+    <h2 id="c1">--</h2>
+</div>
+
+<div class="card c2">
+    <h3>🐷 Cuna 2</h3>
+    <h2 id="c2">--</h2>
+</div>
+
+<div class="card c3">
+    <h3>🐷 Cuna 3</h3>
+    <h2 id="c3">--</h2>
+</div>
+
+</div>
+
+<!-- CONFIG -->
+
+<div class="config">
+
+<h2>⚙️ Configuración de edades</h2>
+
+<div class="config-grid">
+
+<div class="config-item">
+    <label>Cuna 1</label>
+    <input type="date" id="fecha1">
+</div>
+
+<div class="config-item">
+    <label>Cuna 2</label>
+    <input type="date" id="fecha2">
+</div>
+
+<div class="config-item">
+    <label>Cuna 3</label>
+    <input type="date" id="fecha3">
+</div>
+
+</div>
+
+<button onclick="enviarConfiguracion()">
+    Guardar configuración
+</button>
+
+</div>
+
+<!-- CHARTS -->
+
+<div class="chart-grid">
+
+<div class="chart-container">
+    <canvas id="cunasChart"></canvas>
+</div>
+
+<div class="chart-container">
+    <canvas id="tempChart"></canvas>
+</div>
+
+<div class="chart-container">
+    <canvas id="humChart"></canvas>
+</div>
+
+<div class="chart-container">
+    <canvas id="controlChart"></canvas>
+</div>
+
+</div>
+
+<div class="footer-status" id="lastUpdate">
+    Esperando datos...
+</div>
 
 </div>
 
 <script>
 
-// Fondo blanco para gráficas
-const whiteBackgroundPlugin = {
-    id: 'whiteBackground',
-    beforeDraw: (chart) => {
-        const {ctx, chartArea} = chart;
-        ctx.save();
-        ctx.fillStyle = 'white';
-        ctx.fillRect(chartArea.left, chartArea.top,
-                     chartArea.right - chartArea.left,
-                     chartArea.bottom - chartArea.top);
-        ctx.restore();
-    }
-};
+const API =
+"https://mu5cj8jjzb.execute-api.us-east-1.amazonaws.com/temperaturas";
 
-const API = "https://mu5cj8jjzb.execute-api.us-east-1.amazonaws.com/temperaturas";
+const CONFIG_API ="https://tqb2se27sg.execute-api.us-east-1.amazonaws.com/config";
 
 let charts = {};
 
-async function cargarDatos() {
-    const range = document.getElementById("range").value;
-    document.getElementById("status").innerText = "Cargando...";
+// ================= CONFIG =================
 
-    const res = await fetch(`${API}?range=${range}`);
-    let data = await res.json();
+async function enviarConfiguracion(){
 
-    if (!data || data.length === 0) {
-        const res2 = await fetch(`${API}?range=all`);
-        data = await res2.json();
-        if (!data.length) return;
+    try{
+
+        const fecha1 =
+            document.getElementById("fecha1").value;
+
+        const fecha2 =
+            document.getElementById("fecha2").value;
+
+        const fecha3 =
+            document.getElementById("fecha3").value;
+
+        const payload = {
+
+            inicio_cuna1:
+                Math.floor(new Date(fecha1).getTime()/1000),
+
+            inicio_cuna2:
+                Math.floor(new Date(fecha2).getTime()/1000),
+
+            inicio_cuna3:
+                Math.floor(new Date(fecha3).getTime()/1000)
+
+        };
+
+        const res = await fetch(CONFIG_API,{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify(payload)
+
+        });
+
+        const data = await res.json();
+
+        console.log(data);
+
+        alert("✅ Configuración enviada");
+
+    }catch(err){
+
+        console.error(err);
+
+        alert("❌ Error enviando configuración");
     }
-
-    renderData(data);
 }
 
-function renderData(data) {
+// ================= DATOS =================
 
-    document.getElementById("status").innerText = `${data.length} registros`;
+async function cargarDatos(){
 
-    const labels = data.map(d => {
-        const date = new Date(d.timestamp * 1000);
-        return date.toLocaleString('es-MX', {
-            day: '2-digit',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    });
+    try{
 
-    const c1 = data.map(d => d.payload?.cunas?.cuna1 ?? 0);
-    const c2 = data.map(d => d.payload?.cunas?.cuna2 ?? 0);
-    const c3 = data.map(d => d.payload?.cunas?.cuna3 ?? 0);
+        document.getElementById("connectionStatus")
+        .innerHTML = "🟡 Cargando datos...";
 
-    const temp = data.map(d => d.payload?.ambiente?.temp ?? 0);
-    const hum = data.map(d => d.payload?.ambiente?.hum ?? 0);
+        const range =
+            document.getElementById("range").value;
 
-    const foco1 = data.map(d => d.payload?.control?.cuna1?.foco ?? 0);
-    const foco2 = data.map(d => d.payload?.control?.cuna2?.foco ?? 0);
-    const foco3 = data.map(d => d.payload?.control?.cuna3?.foco ?? 0);
+        const res =
+            await fetch(`${API}?range=${range}`);
 
-    const last = data[data.length - 1].payload;
+        const data =
+            await res.json();
 
-    document.getElementById("temp").innerText = last.ambiente.temp + " °C";
-    document.getElementById("hum").innerText = last.ambiente.hum + " %";
-    document.getElementById("c1").innerText = last.cunas.cuna1 + " °C";
-    document.getElementById("c2").innerText = last.cunas.cuna2 + " °C";
-    document.getElementById("c3").innerText = last.cunas.cuna3 + " °C";
+        renderData(data);
 
-    for (let key in charts) {
-        if (charts[key]) charts[key].destroy();
+        document.getElementById("connectionStatus")
+        .innerHTML = "🟢 Sistema conectado";
+
+    }catch(err){
+
+        console.error(err);
+
+        document.getElementById("connectionStatus")
+        .innerHTML = "🔴 Error conexión";
+
     }
 
-    const options = (title, yLabel) => ({
-        plugins: {
-            title: { display: true, text: title, color: '#000' },
-            legend: { labels: { color: '#000' } }
-        },
-        scales: {
-            y: {
-                title: { display: true, text: yLabel, color: '#000' },
-                ticks: { color: '#000' },
-                grid: { color: 'rgba(0,0,0,0.1)' }
+}
+
+// ================= RENDER =================
+
+function renderData(data){
+
+    if(!data || !data.length) return;
+
+    document.getElementById("status")
+    .innerText = `${data.length} registros`;
+
+    const labels = data.map(d=>{
+
+        const date =
+            new Date(d.timestamp * 1000);
+
+        return date.toLocaleString('es-MX',{
+
+            day:'2-digit',
+            month:'short',
+            hour:'2-digit',
+            minute:'2-digit'
+
+        });
+
+    });
+
+    const c1 = data.map(d=>d.payload?.cunas?.cuna1 ?? 0);
+    const c2 = data.map(d=>d.payload?.cunas?.cuna2 ?? 0);
+    const c3 = data.map(d=>d.payload?.cunas?.cuna3 ?? 0);
+
+    const temp =
+        data.map(d=>d.payload?.ambiente?.temp ?? 0);
+
+    const hum =
+        data.map(d=>d.payload?.ambiente?.hum ?? 0);
+
+    const foco1 =
+        data.map(d=>d.payload?.control?.cuna1?.foco ?? 0);
+
+    const foco2 =
+        data.map(d=>d.payload?.control?.cuna2?.foco ?? 0);
+
+    const foco3 =
+        data.map(d=>d.payload?.control?.cuna3?.foco ?? 0);
+
+    const last = data[data.length-1].payload;
+
+    document.getElementById("temp")
+    .innerText = `${last.ambiente.temp} °C`;
+
+    document.getElementById("hum")
+    .innerText = `${last.ambiente.hum} %`;
+
+    document.getElementById("c1")
+    .innerText = `${last.cunas.cuna1} °C`;
+
+    document.getElementById("c2")
+    .innerText = `${last.cunas.cuna2} °C`;
+
+    document.getElementById("c3")
+    .innerText = `${last.cunas.cuna3} °C`;
+
+    document.getElementById("lastUpdate")
+    .innerText =
+    `Última actualización: ${
+        new Date().toLocaleTimeString()
+    }`;
+
+    for(let key in charts){
+
+        if(charts[key])
+            charts[key].destroy();
+    }
+
+    const options = (title,yLabel)=>({
+
+        responsive:true,
+
+        plugins:{
+
+            title:{
+                display:true,
+                text:title,
+                color:"#263238",
+                font:{
+                    size:18
+                }
             },
-            x: {
-                ticks: { color: '#000' },
-                grid: { color: 'rgba(0,0,0,0.05)' }
+
+            legend:{
+                labels:{
+                    color:"#263238"
+                }
             }
+
+        },
+
+        scales:{
+
+            y:{
+                title:{
+                    display:true,
+                    text:yLabel
+                },
+                ticks:{
+                    color:"#263238"
+                }
+            },
+
+            x:{
+                ticks:{
+                    color:"#263238"
+                }
+            }
+
         }
+
     });
 
-    charts.cunas = new Chart(cunasChart, {
-        type: 'line',
-        data: {
+    charts.cunas = new Chart(cunasChart,{
+
+        type:"line",
+
+        data:{
             labels,
-            datasets: [
-                { label: 'Cuna 1', data: c1, borderColor: '#2e7d32', backgroundColor: 'rgba(46,125,50,0.2)', tension: 0.4 },
-                { label: 'Cuna 2', data: c2, borderColor: '#6d4c41', backgroundColor: 'rgba(109,76,65,0.2)', tension: 0.4 },
-                { label: 'Cuna 3', data: c3, borderColor: '#f9a825', backgroundColor: 'rgba(249,168,37,0.2)', tension: 0.4 }
+            datasets:[
+
+                {
+                    label:"Cuna 1",
+                    data:c1,
+                    borderColor:"#4caf50",
+                    tension:0.4,
+                    borderWidth:3
+                },
+
+                {
+                    label:"Cuna 2",
+                    data:c2,
+                    borderColor:"#8d6e63",
+                    tension:0.4,
+                    borderWidth:3
+                },
+
+                {
+                    label:"Cuna 3",
+                    data:c3,
+                    borderColor:"#ffb300",
+                    tension:0.4,
+                    borderWidth:3
+                }
+
             ]
         },
-        options: options('🌡️ Temperatura por Cuna', 'Temperatura (°C)'),
-        plugins: [whiteBackgroundPlugin]
+
+        options:options(
+            "🌡️ Temperatura por Cuna",
+            "Temperatura °C"
+        )
+
     });
 
-    charts.temp = new Chart(tempChart, {
-        type: 'line',
-        data: {
+    charts.temp = new Chart(tempChart,{
+
+        type:"line",
+
+        data:{
             labels,
-            datasets: [
-                { label: 'Temp Ambiente', data: temp, borderColor: '#2e7d32', tension: 0.4 }
+            datasets:[
+
+                {
+                    label:"Ambiente",
+                    data:temp,
+                    borderColor:"#2e7d32",
+                    tension:0.4,
+                    borderWidth:3
+                }
+
             ]
         },
-        options: options('🌡️ Temperatura Ambiente', 'Temperatura (°C)'),
-        plugins: [whiteBackgroundPlugin]
+
+        options:options(
+            "🌡️ Temperatura Ambiente",
+            "°C"
+        )
+
     });
 
-    charts.hum = new Chart(humChart, {
-        type: 'line',
-        data: {
+    charts.hum = new Chart(humChart,{
+
+        type:"line",
+
+        data:{
             labels,
-            datasets: [
-                { label: 'Humedad', data: hum, borderColor: '#f9a825', tension: 0.4 }
+            datasets:[
+
+                {
+                    label:"Humedad",
+                    data:hum,
+                    borderColor:"#29b6f6",
+                    tension:0.4,
+                    borderWidth:3
+                }
+
             ]
         },
-        options: options('💧 Humedad', 'Humedad (%)'),
-        plugins: [whiteBackgroundPlugin]
+
+        options:options(
+            "💧 Humedad Ambiente",
+            "%"
+        )
+
     });
 
-    charts.control = new Chart(controlChart, {
-        type: 'line',
-        data: {
+    charts.control = new Chart(controlChart,{
+
+        type:"line",
+
+        data:{
             labels,
-            datasets: [
-                { label: 'Foco C1', data: foco1, borderColor: '#2e7d32', tension: 0.4 },
-                { label: 'Foco C2', data: foco2, borderColor: '#6d4c41', tension: 0.4 },
-                { label: 'Foco C3', data: foco3, borderColor: '#f9a825', tension: 0.4 }
+            datasets:[
+
+                {
+                    label:"Foco C1",
+                    data:foco1,
+                    borderColor:"#4caf50",
+                    tension:0.4,
+                    borderWidth:3
+                },
+
+                {
+                    label:"Foco C2",
+                    data:foco2,
+                    borderColor:"#8d6e63",
+                    tension:0.4,
+                    borderWidth:3
+                },
+
+                {
+                    label:"Foco C3",
+                    data:foco3,
+                    borderColor:"#ffb300",
+                    tension:0.4,
+                    borderWidth:3
+                }
+
             ]
         },
-        options: options('💡 Potencia de Focos', 'Potencia (%)'),
-        plugins: [whiteBackgroundPlugin]
+
+        options:options(
+            "💡 Potencia de Focos",
+            "%"
+        )
+
     });
+
 }
 
 cargarDatos();
-setInterval(cargarDatos, 60000);
+
+setInterval(cargarDatos,60000);
 
 </script>
 
