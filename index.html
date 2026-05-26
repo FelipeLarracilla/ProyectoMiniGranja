@@ -18,8 +18,6 @@
     --earth:#8d6e63;
     --accent:#ffb300;
     --text:#263238;
-    --soft:#eef3ea;
-    --danger:#e53935;
     --shadow:0 8px 20px rgba(0,0,0,0.08);
 }
 
@@ -33,8 +31,6 @@ body{
     background:var(--bg);
     color:var(--text);
 }
-
-/* HEADER */
 
 header{
     background:linear-gradient(135deg,var(--primary-dark),var(--primary));
@@ -69,15 +65,11 @@ header{
     backdrop-filter:blur(8px);
 }
 
-/* MAIN */
-
 .container{
     max-width:1500px;
     margin:auto;
     padding:20px;
 }
-
-/* TOP BAR */
 
 .top-bar{
     display:flex;
@@ -97,8 +89,6 @@ select{
     font-size:15px;
     color:var(--text);
 }
-
-/* CARDS */
 
 .cards{
     display:grid;
@@ -146,8 +136,6 @@ select{
     margin:15px 0 5px;
     font-size:34px;
 }
-
-/* CONFIG */
 
 .config{
     background:var(--card);
@@ -202,8 +190,6 @@ button:hover{
     background:var(--primary-dark);
 }
 
-/* CHARTS */
-
 .chart-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(500px,1fr));
@@ -227,8 +213,6 @@ canvas{
     text-align:center;
     color:#607d8b;
 }
-
-/* MOBILE */
 
 @media(max-width:700px){
 
@@ -270,8 +254,6 @@ canvas{
 
 <div class="container">
 
-<!-- TOP BAR -->
-
 <div class="top-bar">
 
 <select id="range" onchange="cargarDatos()">
@@ -293,7 +275,7 @@ canvas{
 
 </div>
 
-<!-- CARDS -->
+<!-- CARDS PRINCIPALES -->
 
 <div class="cards">
 
@@ -320,6 +302,27 @@ canvas{
 <div class="card c3">
     <h3>🐷 Cuna 3</h3>
     <h2 id="c3">--</h2>
+</div>
+
+</div>
+
+<!-- EDADES -->
+
+<div class="cards">
+
+<div class="card c1">
+    <h3>🐷 Edad Cuna 1</h3>
+    <h2 id="edad1">-- días</h2>
+</div>
+
+<div class="card c2">
+    <h3>🐷 Edad Cuna 2</h3>
+    <h2 id="edad2">-- días</h2>
+</div>
+
+<div class="card c3">
+    <h3>🐷 Edad Cuna 3</h3>
+    <h2 id="edad3">-- días</h2>
 </div>
 
 </div>
@@ -375,6 +378,10 @@ canvas{
     <canvas id="controlChart"></canvas>
 </div>
 
+<div class="chart-container">
+    <canvas id="ventChart"></canvas>
+</div>
+
 </div>
 
 <div class="footer-status" id="lastUpdate">
@@ -388,7 +395,8 @@ canvas{
 const API =
 "https://mu5cj8jjzb.execute-api.us-east-1.amazonaws.com/temperaturas";
 
-const CONFIG_API ="https://tqb2se27sg.execute-api.us-east-1.amazonaws.com/config";
+const CONFIG_API =
+"https://tqb2se27sg.execute-api.us-east-1.amazonaws.com/config";
 
 let charts = {};
 
@@ -459,7 +467,8 @@ async function cargarDatos(){
             document.getElementById("range").value;
 
         const res =
-            await fetch(`${API}?range=${range}`);
+            //await fetch(`${API}?range=${range}`);
+            await fetch(`${API}?range=${range}&points=60`)
 
         const data =
             await res.json();
@@ -524,6 +533,11 @@ function renderData(data){
     const foco3 =
         data.map(d=>d.payload?.control?.cuna3?.foco ?? 0);
 
+    const ventilador =
+        data.map(
+            d=>d.payload?.control?.ventilador ?? 0
+        );
+
     const last = data[data.length-1].payload;
 
     document.getElementById("temp")
@@ -540,6 +554,15 @@ function renderData(data){
 
     document.getElementById("c3")
     .innerText = `${last.cunas.cuna3} °C`;
+
+    document.getElementById("edad1")
+    .innerText = `${last.edades.cuna1} días`;
+
+    document.getElementById("edad2")
+    .innerText = `${last.edades.cuna2} días`;
+
+    document.getElementById("edad3")
+    .innerText = `${last.edades.cuna3} días`;
 
     document.getElementById("lastUpdate")
     .innerText =
@@ -732,6 +755,42 @@ function renderData(data){
             "%"
         )
 
+    });
+
+    charts.vent = new Chart(ventChart,{
+
+        type:"line",
+
+        data:{
+
+            labels,
+
+            datasets:[
+
+                {
+
+                    label:"Ventilador",
+
+                    data:ventilador,
+
+                    borderColor:"#42a5f5",
+
+                    tension:0.4,
+
+                    borderWidth:3,
+
+                    fill:false
+                }
+
+            ]
+        },
+
+        options:options(
+
+            "🌬️ Potencia Ventilador",
+
+            "%"
+        )
     });
 
 }
